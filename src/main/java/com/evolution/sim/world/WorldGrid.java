@@ -1,5 +1,6 @@
 package com.evolution.sim.world;
 
+import com.evolution.sim.model.PheromoneGrid;
 import lombok.Getter;
 
 public class WorldGrid {
@@ -8,11 +9,14 @@ public class WorldGrid {
     @Getter
     private final int width;
     private final GridCell[][] grid;
+    @Getter
+    private final PheromoneGrid pheromones;
 
     public WorldGrid(int height, int width) {
         this.height = height;
         this.width = width;
         this.grid = new GridCell[height][width];
+        this.pheromones = new PheromoneGrid(width, height);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 grid[i][j] = new GridCell();

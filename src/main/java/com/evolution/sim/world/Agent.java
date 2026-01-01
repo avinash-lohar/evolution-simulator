@@ -9,6 +9,9 @@ import java.util.UUID;
 @Getter
 @RequiredArgsConstructor
 public class Agent implements Runnable, Entity{
+    private static final int SCENT_FOOD = 0;
+    private static final int SCENT_HOME = 1;
+
     private final UUID uuid = UUID.randomUUID();
     private final WorldGrid grid;
     private final Genome genome;
@@ -18,6 +21,7 @@ public class Agent implements Runnable, Entity{
     private int y;
     private boolean alive = true;
     private final Random random = new Random();
+    private boolean carryingCargo = false;
 
     @Override
     public void run() {
@@ -41,6 +45,7 @@ public class Agent implements Runnable, Entity{
 
     // Later I can extract this strategy and supply from outside
     private void act(){
+
         int dy = 0; int dx = 0;
         while (dy == 0 && dx == 0){
             dy = random.nextInt(3) - 1; // -1, 0, 1
