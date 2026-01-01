@@ -2,6 +2,10 @@ package com.evolution.sim.world;
 
 import com.evolution.sim.dto.AgentDTO;
 import com.evolution.sim.dto.GridSnapShot;
+import com.evolution.sim.dto.StructureDTO;
+import com.evolution.sim.model.Sink;
+import com.evolution.sim.model.Source;
+import com.evolution.sim.model.TangibleEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -19,14 +23,25 @@ public class SimulationService {
     private final List<Agent> agents;
     private final ExecutorService vThreadExecutor;
     private boolean running = false;
+    private final List<TangibleEntity> structures = new ArrayList<>();
 
     public SimulationService(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
-        this.worldGrid = new WorldGrid(20, 20);
+        this.worldGrid = new WorldGrid(50, 50);
         this.agents = new ArrayList<>();
         this.vThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        spawnStructures();
     }
 
+    public void spawnStructures() {
+        Source source = new Source(5, 5);
+        worldGrid.getCell(5,5).tryEnter(source);
+        structures.add(source);
+
+        Sink sink = new Sink(45, 45);
+        worldGrid.getCell(45, 45).tryEnter(sink);
+        structures.add(sink);
+    }
     public void startSimulation(){
         if(running) return;
         running = true;
@@ -61,7 +76,7 @@ public class SimulationService {
                 GridSnapShot snapshot = createSnapshot();
                 // send to anyone subscribed to topic/grid
                 messagingTemplate.convertAndSend("/topic/grid", snapshot);
-                Thread.sleep(33); // throttle, 30FPS
+                Thread.sleep(15); // throttle, 30FPS
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -70,11 +85,14 @@ public class SimulationService {
 
     private GridSnapShot createSnapshot()
     {
+        List<StructureDTO> structureDTOS = structures.stream()
+                .map(s -> new StructureDTO(s.getType(), s.getX(), s.getY()))
+                .toList();
         List<AgentDTO> agentdtos = agents.stream()
                 .map(a -> new AgentDTO(a.getUuid().toString(), a.getX(), a.getY(), ""))
                 .toList();
         //fuzzy snapshot
-        return  new GridSnapShot(worldGrid.getWidth(), worldGrid.getHeight(), agentdtos, System.currentTimeMillis() );
+        return  new GridSnapShot(worldGrid.getWidth(), worldGrid.getHeight(), agentdtos, structureDTOS, System.currentTimeMillis() );
     }
 
     private void printGrid() {
