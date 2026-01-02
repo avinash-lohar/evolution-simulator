@@ -20,4 +20,9 @@ public class GridCell {
     public boolean isOccupied(){
         return occupant.get() != null;
     }
+
+
+    public Entity getOccupant(){
+        return occupant.get();
+    }
 }

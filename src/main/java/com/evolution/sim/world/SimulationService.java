@@ -34,12 +34,12 @@ public class SimulationService {
     }
 
     public void spawnStructures() {
-        Source source = new Source(5, 5);
-        worldGrid.getCell(5,5).tryEnter(source);
+        Source source = new Source(20, 20);
+        worldGrid.getCell(20,20).tryEnter(source);
         structures.add(source);
 
-        Sink sink = new Sink(45, 45);
-        worldGrid.getCell(45, 45).tryEnter(sink);
+        Sink sink = new Sink(40, 40);
+        worldGrid.getCell(40, 40).tryEnter(sink);
         structures.add(sink);
     }
     public void startSimulation(){
