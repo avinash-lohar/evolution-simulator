@@ -26,7 +26,7 @@ public class WorldGrid {
 
     public boolean move(Entity entity, int oldX, int oldY, int newX, int newY)
     {
-        if(isInvalidValidCoordinate(newX, newY)) return false;
+        if(isInvalidCoordinate(newX, newY)) return false;
 
         GridCell target = grid[newX][newY];
         GridCell current = grid[oldX][oldY];
@@ -46,13 +46,13 @@ public class WorldGrid {
         return false;
     }
 
-    public boolean isInvalidValidCoordinate(int x, int y)
+    public boolean isInvalidCoordinate(int x, int y)
     {
         return !(x>=0 && x<width && y>=0 && y<height);
     }
 
     public GridCell getCell(int x, int y){
-        if(isInvalidValidCoordinate(x, y)) return null;
+        if(isInvalidCoordinate(x, y)) return null;
         return grid[x][y];
     }
 

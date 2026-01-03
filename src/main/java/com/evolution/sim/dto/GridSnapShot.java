@@ -7,6 +7,7 @@ public record GridSnapShot(
         int height,
         List<AgentDTO> agents,
         List<StructureDTO> structures,
+        List<PheromoneDTO> pheromones,
         long timestamp
 ) { }
 

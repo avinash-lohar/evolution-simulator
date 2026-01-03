@@ -3,6 +3,7 @@ package com.evolution.sim.world;
 import com.evolution.sim.dto.AgentDTO;
 import com.evolution.sim.dto.GridSnapShot;
 import com.evolution.sim.dto.StructureDTO;
+import com.evolution.sim.model.PheromoneGrid;
 import com.evolution.sim.model.Sink;
 import com.evolution.sim.model.Source;
 import com.evolution.sim.model.TangibleEntity;
@@ -11,7 +12,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -20,7 +24,7 @@ import java.util.stream.Collectors;
 public class SimulationService {
     private final WorldGrid worldGrid;
     private final SimpMessagingTemplate messagingTemplate;
-    private final List<Agent> agents;
+    private final CopyOnWriteArrayList<Agent> agents;
     private final ExecutorService vThreadExecutor;
     private boolean running = false;
     private final List<TangibleEntity> structures = new ArrayList<>();
@@ -28,20 +32,21 @@ public class SimulationService {
     public SimulationService(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
         this.worldGrid = new WorldGrid(50, 50);
-        this.agents = new ArrayList<>();
+        this.agents = new CopyOnWriteArrayList<>();
         this.vThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
         spawnStructures();
     }
 
     public void spawnStructures() {
         Source source = new Source(20, 20);
-        worldGrid.getCell(20,20).tryEnter(source);
+        worldGrid.getCell(20,20).tryEnter(source); // Here i'm violating law of demeter
         structures.add(source);
 
         Sink sink = new Sink(40, 40);
         worldGrid.getCell(40, 40).tryEnter(sink);
         structures.add(sink);
     }
+
     public void startSimulation(){
         if(running) return;
         running = true;
@@ -57,6 +62,7 @@ public class SimulationService {
         }
         //To observe, use platform thread
         new Thread(this::broadcastloop).start();
+        startEvaporationLoop();
     }
 
 //    private void consoleRenderLoop(){
@@ -74,6 +80,7 @@ public class SimulationService {
         while(running) {
             try {
                 GridSnapShot snapshot = createSnapshot();
+                agents.removeIf(agent -> !agent.isAlive());
                 // send to anyone subscribed to topic/grid
                 messagingTemplate.convertAndSend("/topic/grid", snapshot);
                 Thread.sleep(15); // throttle, 30FPS
@@ -91,8 +98,9 @@ public class SimulationService {
         List<AgentDTO> agentdtos = agents.stream()
                 .map(a -> new AgentDTO(a.getUuid().toString(), a.getX(), a.getY(), ""))
                 .toList();
+
         //fuzzy snapshot
-        return  new GridSnapShot(worldGrid.getWidth(), worldGrid.getHeight(), agentdtos, structureDTOS, System.currentTimeMillis() );
+        return  new GridSnapShot(worldGrid.getWidth(), worldGrid.getHeight(), agentdtos, structureDTOS, worldGrid.getPheromones().getFoodScentSnapshot(), System.currentTimeMillis() );
     }
 
     private void printGrid() {
@@ -112,4 +120,19 @@ public class SimulationService {
         }
         System.out.println(sb.toString());
     }
+
+    private void startEvaporationLoop() {
+
+        new Thread(() -> {
+            while (running) {
+                try {
+                    worldGrid.getPheromones().evaporateAll();
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }).start();
+    }
+
 }

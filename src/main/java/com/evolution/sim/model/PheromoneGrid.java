@@ -1,5 +1,9 @@
 package com.evolution.sim.model;
 
+import com.evolution.sim.dto.PheromoneDTO;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PheromoneGrid {
@@ -22,6 +26,19 @@ public class PheromoneGrid {
                 }
             }
         }
+    }
+
+    public List<PheromoneDTO> getFoodScentSnapshot(){
+        List<PheromoneDTO> res = new ArrayList<>(this.width);
+        for(int x=0; x<width; x++){
+            for(int y=0; y<height; y++){
+                int z;
+                if((z = scents[0][x][y].get()) > 0){
+                    res.add(new PheromoneDTO(x, y, z, 0));
+                }
+            }
+        }
+        return res;
     }
 
     /**
@@ -57,7 +74,7 @@ public class PheromoneGrid {
                     if (current > 0) {
                         // Decay by 2% per tick (multiply by 0.98)
                         // Bit shifting is faster, but simple math is fine here
-                        int newValue = (int) (current * 0.98);
+                        int newValue = (int) (current * 0.7);
                         cell.set(newValue);
                     }
                 }
