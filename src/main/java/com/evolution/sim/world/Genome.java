@@ -10,6 +10,12 @@ public class Genome {
     private int patience; // 1 to 10
     private int sensorRange; // 1 to 5
 
+    public Genome(Genome genome) {
+        this.speed = genome.speed;
+        this.patience = genome.patience;
+        this.sensorRange = genome.sensorRange;
+    }
+
     public static Genome random() {
 
         return Genome.builder()
@@ -17,5 +23,13 @@ public class Genome {
                 .patience((int) (Math.random() * 10) + 1)
                 .sensorRange((int) (Math.random() * 5) + 1)
                 .build();
+    }
+
+    public Genome mutate() {
+        int[] additive = {0, 0, -1, 0, 1, 0, 0, 0 };
+        int i = (int) ((Math.random() * 7) + 1);
+        Genome newGen = new Genome(this);
+        newGen.speed = this.speed + additive[i];
+        return newGen;
     }
 }

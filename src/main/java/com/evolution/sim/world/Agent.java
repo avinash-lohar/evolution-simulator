@@ -100,7 +100,7 @@ public class Agent implements Runnable, Entity{
                 newY = y + dy;
             }
         }
-        
+
         if (newX == x && newY == y) {
             frustration++;
             return;

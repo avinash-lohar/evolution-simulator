@@ -41,10 +41,16 @@ public class SimulationService {
         Source source = new Source(20, 20);
         worldGrid.getCell(20,20).tryEnter(source); // Here i'm violating law of demeter
         structures.add(source);
+        Source source2 = new Source(20, 40);
+        worldGrid.getCell(20,40).tryEnter(source); // Here i'm violating law of demeter
+        structures.add(source2);
 
         Sink sink = new Sink(40, 40);
         worldGrid.getCell(40, 40).tryEnter(sink);
         structures.add(sink);
+        Sink sink2 = new Sink(40, 20);
+        worldGrid.getCell(40, 20).tryEnter(sink);
+        structures.add(sink2);
     }
 
     public void startSimulation(){
@@ -133,6 +139,34 @@ public class SimulationService {
                 }
             }
         }).start();
+    }
+
+    private void checkPopulationHealth() {
+        int minPopulation = 20;
+
+        if (agents.size() < minPopulation) {
+            spawnChild();
+        }
+    }
+
+    private void spawnChild() {
+        if (agents.isEmpty()) {
+            startSimulation();
+            return;
+        }
+
+        Agent parent1 = agents.get(new Random().nextInt(agents.size()));
+        Agent parent2 = agents.get(new Random().nextInt(agents.size()));
+
+        Agent bestParent = (parent1.getFitness() > parent2.getFitness()) ? parent1 : parent2;
+
+        Genome childGenes = bestParent.getGenome().mutate();
+
+        Agent child = new Agent(worldGrid, childGenes);
+        agents.add(child);
+        vThreadExecutor.submit(child);
+
+        System.out.println("Born: Child of Fitness " + bestParent.getFitness() + " with Speed " + childGenes.getSpeed());
     }
 
 }
