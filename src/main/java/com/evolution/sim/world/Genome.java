@@ -10,12 +10,6 @@ public class Genome {
     private int patience; // 1 to 10
     private int sensorRange; // 1 to 5
 
-    public Genome(Genome genome) {
-        this.speed = genome.speed;
-        this.patience = genome.patience;
-        this.sensorRange = genome.sensorRange;
-    }
-
     public static Genome random() {
 
         return Genome.builder()
@@ -27,7 +21,11 @@ public class Genome {
 
     public Genome mutate() {
         int[] additive = {0, 0, -1, 0, 1, 0, 0, 0};
-        Genome newGen = new Genome(this);
+        Genome newGen = Genome.builder()
+                .speed(this.speed)
+                .patience(this.patience)
+                .sensorRange(this.sensorRange)
+                .build();
         int i = (int) (Math.random() * additive.length);
         int potentialSpeed = this.speed + additive[i];
         newGen.setSpeed(Math.max(1, Math.min(10, potentialSpeed)));
