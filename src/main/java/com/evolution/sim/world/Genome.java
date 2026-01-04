@@ -26,10 +26,12 @@ public class Genome {
     }
 
     public Genome mutate() {
-        int[] additive = {0, 0, -1, 0, 1, 0, 0, 0 };
-        int i = (int) ((Math.random() * 7) + 1);
+        int[] additive = {0, 0, -1, 0, 1, 0, 0, 0};
         Genome newGen = new Genome(this);
-        newGen.speed = this.speed + additive[i];
+        int i = (int) (Math.random() * additive.length);
+        int potentialSpeed = this.speed + additive[i];
+        newGen.setSpeed(Math.max(1, Math.min(10, potentialSpeed)));
+
         return newGen;
     }
 }
