@@ -89,6 +89,7 @@ public class SimulationService {
                 agents.removeIf(agent -> !agent.isAlive());
                 // send to anyone subscribed to topic/grid
                 messagingTemplate.convertAndSend("/topic/grid", snapshot);
+                checkPopulationHealth();
                 Thread.sleep(15); // throttle, 30FPS
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -169,4 +170,14 @@ public class SimulationService {
         System.out.println("Born: Child of Fitness " + bestParent.getFitness() + " with Speed " + childGenes.getSpeed());
     }
 
+    public void stopSimulation() {
+        running = false;
+    }
+
+    public void setGlobalEvaporationRate(double value) {
+
+    }
+
+    public void forceCleanup() {
+    }
 }
